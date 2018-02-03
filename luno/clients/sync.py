@@ -1,6 +1,7 @@
 from requests import Session
 from luno.clients.abc import LunoClientBase
 from luno.decorators import requires_authentication
+from luno.exceptions import UnsupportedHttpVerbException
 
 from typing import Dict
 
@@ -17,6 +18,12 @@ class LunoSyncClient(LunoClientBase):
 			resp = self.session.get(url, params=params)
 		elif method == 'post':
 			resp = self.session.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		elif method == 'delete':
+			resp = self.session.delete(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		elif method == 'put':
+			resp = self.session.put(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		else:
+			raise UnsupportedHttpVerbException(f'http verb {method} is not supported')
 
 		resp.raise_for_status()
 
@@ -80,7 +87,7 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of account data
 		"""
-		return self._fetch_resource('post', 'trades', {'pair': pair, 'name': name})
+		return self._fetch_resource('post', 'accounts', {'currency': currency, 'name': name})
 
 	@requires_authentication
 	def balance(self) -> Dict:
@@ -220,7 +227,7 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict indicating success or failure
 		"""
-		return self._fetch_resource('post', 'marketorder', {'order_id': order_id})
+		return self._fetch_resource('post', 'stoporder', {'order_id': order_id})
 
 	@requires_authentication
 	def get_order(self, order_id: str) -> Dict:
@@ -316,7 +323,7 @@ class LunoSyncClient(LunoClientBase):
 		return self._fetch_resource('get', 'withdrawals')
 
 	@requires_authentication
-	def create_withdrawal_request(self) -> Dict:
+	def create_withdrawal_request(self, kind: str, amount: str, beneficiary_id: str=None) -> Dict:
 		"""Creates a new withdrawal request
 
 		Args:
@@ -345,7 +352,7 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of withdrawal request data
 		"""
-		return self._fetch_resource('post', 'withdrawals', {'id': withdrawal_id})
+		return self._fetch_resource('get', f'withdrawals/{withdrawal_id}')
 
 	@requires_authentication
 	def cancel_withdrawal_request(self, withdrawal_id: int) -> Dict:
@@ -357,7 +364,7 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of withdrawal request data
 		"""
-		return self._fetch_resource('delete', 'withdrawals', {'id': withdrawal_id})
+		return self._fetch_resource('delete', f'withdrawals/{withdrawal_id}')
 
 	@requires_authentication
 	def send(
@@ -391,7 +398,7 @@ class LunoSyncClient(LunoClientBase):
 		if message is not None:
 			params['message'] = message
 
-		return self._fetch_resource('post', 'withdrawals', params)
+		return self._fetch_resource('post', 'send', params)
 
 	@requires_authentication
 	def create_quote(

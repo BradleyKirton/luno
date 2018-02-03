@@ -3,6 +3,7 @@ import treq
 from typing import Dict
 from luno.clients.abc import LunoClientBase
 from luno.decorators import requires_authentication
+from luno.exceptions import UnsupportedHttpVerbException
 from twisted.internet.defer import Deferred
 from twisted.internet.defer import inlineCallbacks
 
@@ -20,6 +21,12 @@ class LunoAsyncClient(LunoClientBase):
 			resp = yield treq.get(url, params=params)
 		elif method == 'post':
 			resp = yield treq.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		elif method == 'delete':
+			resp = yield treq.delete(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		elif method == 'put':
+			resp = yield treq.put(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+		else:
+			raise UnsupportedHttpVerbException(f'http verb {method} is not supported')
 
 		data = yield resp.json()
 		return data

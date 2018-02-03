@@ -81,6 +81,7 @@ pytest
 
 Note this library is still in beta.
 
+- Upload to PyPi
 - Write tests
 - Write documentation
 - Write test suite for async client
