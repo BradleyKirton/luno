@@ -4,7 +4,7 @@ Sync and Async Python 3 clients for the Luno API
 
 # Quickstart
 
-This library includes 2 types of clients, a sync client built using the (requests)[https://github.com/requests/requests] library and an async library built with (treq)[https://github.com/twisted/treq] and (twisted)[https://github.com/twisted/twisted].
+This library includes 2 types of clients, a sync client built using the [requests](https://github.com/requests/requests) library and an async library built with [treq](https://github.com/twisted/treq) and [twisted](https://github.com/twisted/twisted).
 
 ## Sync client
 
