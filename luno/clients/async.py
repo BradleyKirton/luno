@@ -1,47 +1,49 @@
-from requests import Session
-from luno.clients.abc import LunoClientBase
-from luno.decorators import requires_authentication
+import treq
 
 from typing import Dict
+from luno.clients.abc import LunoClientBase
+from luno.decorators import requires_authentication
+from twisted.internet.defer import Deferred
+from twisted.internet.defer import inlineCallbacks
 
 
-class LunoSyncClient(LunoClientBase):
+class LunoAsyncClient(LunoClientBase):
 	def __init__(self, api_key: str=None, secret: str=None) -> None:
 		self.api_key = api_key
 		self.secret = secret
-		self.session = Session()
 
-	def _fetch_resource(self, method: str, suffix: str, params: Dict={}) -> Dict:
+	@inlineCallbacks
+	def _fetch_resource(self, method: str, suffix: str, params: Dict={}) -> Deferred:
 		url = f'{self.BASE_URI}{suffix}'
+
 		if method == 'get':
-			resp = self.session.get(url, params=params)
+			resp = yield treq.get(url, params=params)
 		elif method == 'post':
-			resp = self.session.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+			resp = yield treq.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
 
-		resp.raise_for_status()
+		data = yield resp.json()
+		return data
 
-		return resp.json()
-
-	def ticker(self, pair: str) -> Dict:
+	def ticker(self, pair: str) -> Deferred:
 		"""Returns the latest ticker indicators
 
 		Args:
 			pair: A currency pair
 
 		Returns:
-		    A python dict of ticker indicators
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'ticker', {'pair': pair})
 
-	def tickers(self) -> Dict:
+	def tickers(self) -> Deferred:
 		"""Returns the latest ticker indicators from all active Luno exchanges
 
 		Returns:
-		    A python dict of ticker indicators
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'tickers')
 
-	def order_book(self, pair: str) -> Dict:
+	def order_book(self, pair: str) -> Deferred:
 		"""Returns a list of bids and asks in the order book. Ask orders are sorted by price ascending. 
 		Bid orders are sorted by price descending. Note that multiple orders at the same price are not necessarily conflated
 
@@ -49,11 +51,11 @@ class LunoSyncClient(LunoClientBase):
 			pair: Currency pair e.g. XBTZAR
 
 		Returns:
-		    A python dict of orders data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'orderbook', {'pair': pair})
 
-	def trades(self, pair: str, since: int=None) -> Dict:
+	def trades(self, pair: str, since: int=None) -> Deferred:
 		"""Returns a list of the most recent trades. At most 100 results are returned per call
 
 		Args:
@@ -61,7 +63,7 @@ class LunoSyncClient(LunoClientBase):
 			since: Fetch trades executed after this time, specified as a Unix timestamp in milliseconds
 
 		Returns:
-		    A python dict of trade data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {'pair': pair}
 		if since is not None:
@@ -70,7 +72,7 @@ class LunoSyncClient(LunoClientBase):
 		return self._fetch_resource('get', 'trades', params)
 
 	@requires_authentication
-	def accounts(self, currency: str, name: str) -> Dict:
+	def accounts(self, currency: str, name: str) -> Deferred:
 		"""Create an additional account for the specified currency
 
 		Args:
@@ -78,21 +80,21 @@ class LunoSyncClient(LunoClientBase):
 			name: The label to use for this account e.g. "Trading ACC".
 
 		Returns:
-		    A python dict of account data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('post', 'trades', {'pair': pair, 'name': name})
 
 	@requires_authentication
-	def balance(self) -> Dict:
+	def balance(self) -> Deferred:
 		"""Return the list of all accounts and their respective balances
 
 		Returns:
-		    A python dict of balance data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'balance')
 
 	@requires_authentication
-	def transactions(self, account_id: int, min_row: int, max_row: int) -> Dict:
+	def transactions(self, account_id: int, min_row: int, max_row: int) -> Deferred:
 		"""Return a list of transaction entries from an account.
 
 		Transaction entry rows are numbered sequentially starting from 1, where 1 is the oldest entry. 
@@ -109,21 +111,21 @@ class LunoSyncClient(LunoClientBase):
 			max_row: Maximum of the row range to return (exclusive)
 
 		Returns:
-		    A python dict of transaction data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource(
 			'get', f'accounts/{account_id}/transactions', {'min_row': min_row, 'max_row': max_row})
 
 
 	@requires_authentication
-	def list_orders(self) -> Dict:
+	def list_orders(self) -> Deferred:
 		"""Trading on the market is done by submitting trade orders. 
 		
 		After a new order has been created, it is submitted for processing by the order matching engine.
 		The order then either matches against an existing order in the order book and is filled or it rests in the order book until it is stopped. 
 
 		Returns:
-		    A python dict of orders data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'listorders')
 
@@ -136,7 +138,7 @@ class LunoSyncClient(LunoClientBase):
 		volume: str,
 		price: str,
 		base_account_id: str=None,
-		counter_account_id: str=None) -> Dict:
+		counter_account_id: str=None) -> Deferred:
 		"""Create a new trade order
 
 		If no base_account_id or counter_account_id are specified, your default base currency or counter currency account will be used. You can find your account IDs by calling the Balances API.
@@ -150,7 +152,7 @@ class LunoSyncClient(LunoClientBase):
 			counter_account_id: The counter currency account to use in the trade.
 
 		Returns:
-		    A python dict of order data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {
 			'pair': pair,
@@ -175,7 +177,7 @@ class LunoSyncClient(LunoClientBase):
 		counter_volume: str,
 		base_volume: str,
 		base_account_id: str=None,
-		counter_account_id: str=None) -> Dict:
+		counter_account_id: str=None) -> Deferred:
 		"""
 		Create a new market order.
 
@@ -193,7 +195,7 @@ class LunoSyncClient(LunoClientBase):
 			counter_account_id: The counter currency account to use in the trade.
 
 		Returns:
-			A python dict of order data		
+			A twisted deferred which will eventually return a python dict
 		"""
 		params = {
 			'pair': pair,
@@ -211,26 +213,26 @@ class LunoSyncClient(LunoClientBase):
 		return self._fetch_resource('post', 'marketorder', params)
 
 	@requires_authentication
-	def cancel_order(self, order_id: str) -> Dict:
+	def cancel_order(self, order_id: str) -> Deferred:
 		"""Request to stop an order.
 			
 		Args:
 			order_id: The order reference as a string e.g. BXMC2CJ7HNB88U4
 
 		Returns:
-		    A python dict indicating success or failure
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('post', 'marketorder', {'order_id': order_id})
 
 	@requires_authentication
-	def get_order(self, order_id: str) -> Dict:
+	def get_order(self, order_id: str) -> Deferred:
 		"""Get an order by its id.
 			
 		Args:
 			order_id: The order ID
 
 		Returns:
-		    A python dict of order data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', f'orders/{order_id}')
 
@@ -239,7 +241,7 @@ class LunoSyncClient(LunoClientBase):
 		self,
 		pair: str,
 		since: int=None,
-		limit: int=None) -> Dict:
+		limit: int=None) -> Deferred:
 		"""Returns a list of your recent trades for a given pair, sorted by oldest first.
 
 		Note:
@@ -253,7 +255,7 @@ class LunoSyncClient(LunoClientBase):
 			limit: Limit to this number of trades (min 1, max 100, default 100)
 
 		Returns:
-		    A python dict of order data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {'pair': pair}
 
@@ -266,19 +268,19 @@ class LunoSyncClient(LunoClientBase):
 		return self._fetch_resource('get', 'listtrades', params=params)
 
 	@requires_authentication
-	def fee_info(self, pair: str) -> Dict:
+	def fee_info(self, pair: str) -> Deferred:
 		"""Returns your fees and 30 day trading volume (as of midnight) for a given pair.
 
 		Args:
 			pair: Filter to trades of this currency pair e.g. XBTZAR
 
 		Returns:
-		    A python dict of fee data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'fee_info', params={'pair': pair})
 
 	@requires_authentication
-	def receive_addresses(self, asset: str, address: str=None) -> Dict:
+	def receive_addresses(self, asset: str, address: str=None) -> Deferred:
 		"""Returns the default receive address associated with your account and the amount received via the address. 
 		You can specify an optional address parameter to return information for a non-default receive address. 
 		In the response, total_received is the total confirmed Bitcoin amount received excluding unconfirmed transactions. 
@@ -289,12 +291,12 @@ class LunoSyncClient(LunoClientBase):
 			address: Specific Bitcoin address to retrieve. If not provided, the default address will be used.
 
 		Returns:
-		    A python dict of addresses
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'funding_address', params={'asset': asset, 'address': address})
 
 	@requires_authentication
-	def create_receive_address(self, asset: str) -> Dict:
+	def create_receive_address(self, asset: str) -> Deferred:
 		"""Allocates a new receive address to your account. 
 		There is a rate limit of 1 address per hour, but bursts of up to 10 addresses are allowed.
 
@@ -302,21 +304,21 @@ class LunoSyncClient(LunoClientBase):
 			asset: Currency code of the asset e.g. XBT
 
 		Returns:
-		    A python dict of address data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('post', 'funding_address', params={'asset': asset})
 
 	@requires_authentication
-	def withdrawals(self) -> Dict:
+	def withdrawals(self) -> Deferred:
 		"""Returns a list of withdrawal requests.
 
 		Returns:
-		    A python dict of withdrawal data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', 'withdrawals')
 
 	@requires_authentication
-	def create_withdrawal_request(self) -> Dict:
+	def create_withdrawal_request(self) -> Deferred:
 		"""Creates a new withdrawal request
 
 		Args:
@@ -325,7 +327,7 @@ class LunoSyncClient(LunoClientBase):
 			beneficiary_id: The beneficiary ID of the bank account the withdrawal will be paid out to. This parameter is required if you have multiple bank accounts. Your bank account beneficiary ID can be found by clicking on the beneficiary name on the Beneficiaries page. 
 
 		Returns:
-		    A python dict of withdrawal request data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {
 			'type': kind,
@@ -336,26 +338,26 @@ class LunoSyncClient(LunoClientBase):
 		return self._fetch_resource('post', 'withdrawals', params=params)
 
 	@requires_authentication
-	def withdrawal_request_status(self, withdrawal_id: int) -> Dict:
+	def withdrawal_request_status(self, withdrawal_id: int) -> Deferred:
 		"""Returns the status of a particular withdrawal request.
 
 		Args:
 			withdrawal_id: Withdrawal ID to retrieve.
 
 		Returns:
-		    A python dict of withdrawal request data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('post', 'withdrawals', {'id': withdrawal_id})
 
 	@requires_authentication
-	def cancel_withdrawal_request(self, withdrawal_id: int) -> Dict:
+	def cancel_withdrawal_request(self, withdrawal_id: int) -> Deferred:
 		"""Cancel a withdrawal request. This can only be done if the request is still in state PENDING.
 
 		Args:
 			withdrawal_id: ID of the withdrawal to cancel.
 
 		Returns:
-		    A python dict of withdrawal request data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('delete', 'withdrawals', {'id': withdrawal_id})
 
@@ -366,7 +368,7 @@ class LunoSyncClient(LunoClientBase):
 		currency: str,
 		address: str,
 		description: str=None,
-		message: str=None) -> Dict:
+		message: str=None) -> Deferred:
 		"""
 
 		Args:
@@ -377,7 +379,7 @@ class LunoSyncClient(LunoClientBase):
 			message: Message to send to the recipient. This is only relevant when sending to an email address.
 
 		Returns:
-		    A python dict of indicating the status of the send request
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {
 			'amount': amount,
@@ -398,7 +400,7 @@ class LunoSyncClient(LunoClientBase):
 		self,
 		kind: str,
 		base_amount: str,
-		pair: str) -> Dict:
+		pair: str) -> Deferred:
 		"""Creates a new quote to buy or sell a particular amount.
 
 		You can specify either the exact amount that you want to pay or the exact amount that you want too receive.
@@ -413,7 +415,7 @@ class LunoSyncClient(LunoClientBase):
 			pair: Currency pair to trade e.g. XBTZAR, XBTMYR. The pair can also be flipped if you want to buy or sell the counter currency (e.g. ZARXBT).
 
 		Returns:
-		    A python dict of quote data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		params = {
 			'type': kind,
@@ -427,21 +429,21 @@ class LunoSyncClient(LunoClientBase):
 	@requires_authentication
 	def get_quote(
 		self,
-		quote_id: int) -> Dict:
+		quote_id: int) -> Deferred:
 		"""Get the latest status of a quote.
 
 		Args:
 			quote_id: ID of the quote to retrieve.
 
 		Returns:
-		    A python dict of quote data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('get', f'quotes/{quote_id}')
 
 	@requires_authentication
 	def exercise_quote(
 		self,
-		quote_id: int) -> Dict:
+		quote_id: int) -> Deferred:
 		"""Exercise a quote to perform the trade. 
 
 		If there is sufficient balance available in your account, it will be debited and the counter amount credited.
@@ -451,20 +453,20 @@ class LunoSyncClient(LunoClientBase):
 			quote_id: ID of the quote to retrieve.
 
 		Returns:
-		    A python dict of quote data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('put', f'quotes/{quote_id}')
 
 	@requires_authentication
 	def discard_quote(
 		self,
-		quote_id: int) -> Dict:
+		quote_id: int) -> Deferred:
 		"""Discard a quote. Once a quote has been discarded, it cannot be exercised even if it has not expired yet.
 
 		Args:
 			quote_id: ID of the quote to retrieve.
 
 		Returns:
-		    A python dict of quote data
+		    A twisted deferred which will eventually return a python dict
 		"""
 		return self._fetch_resource('delete', f'quotes/{quote_id}')
