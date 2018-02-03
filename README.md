@@ -30,7 +30,7 @@ api_key = ''
 api_secret = ''
 
 client = LunoAsyncClient(api_key=api_key, secret=api_secret)
-data = client.ticker('XBTZAR') # returns a twisted deferred
+d = client.ticker('XBTZAR') # returns a twisted deferred
 
 def print_data(data: Dict) -> None:
     """prints the json response from an API call"""
