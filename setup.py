@@ -6,6 +6,7 @@ import shutil
 from setuptools import setup
 from setuptools import find_packages
 
+
 # Some helper functions
 def get_version():
   PATTERN = "__version__\s+=\s+'(?P<version>.*)'"
@@ -17,7 +18,18 @@ def get_version():
   return match_dict['version']
 
 
+def convert_readme():
+  try:
+    from pypandoc import convert_file
+
+    convert_file('README.md', 'rst', 'md', outputfile='README.rst')
+  except ImportError:
+    print('pypandoc not installed, README.rst will not be updated')
+
+
 if sys.argv[-1] == 'publish':
+    convert_readme()
+
     os.system('python setup.py sdist bdist_wheel')
     os.system('twine upload dist/*')
     shutil.rmtree('dist')
@@ -50,5 +62,5 @@ if __name__ == '__main__':
          'Programming Language :: Python :: 3 :: Only'
       ],
       install_requires=['requests'],
-      extras_require={'dev': ['pytest', 'requests-mock'], 'async': ['treq']}
+      extras_require={'dev': ['pytest', 'requests-mock', 'pypandoc', 'wheel', 'twine'], 'async': ['treq']}
     )
