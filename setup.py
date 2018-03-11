@@ -1,5 +1,7 @@
 import re
 import os
+import sys
+import shutil
 
 from setuptools import setup
 from setuptools import find_packages
@@ -15,9 +17,13 @@ def get_version():
   return match_dict['version']
 
 
-requirements = [
-    'requests'
-]
+if sys.argv[-1] == 'publish':
+    os.system('python setup.py sdist bdist_wheel')
+    os.system('twine upload dist/*')
+    shutil.rmtree('dist')
+    shutil.rmtree('build')
+    shutil.rmtree('luno.egg-info')
+    sys.exit()
 
 
 if __name__ == '__main__':
@@ -43,6 +49,6 @@ if __name__ == '__main__':
          'License :: OSI Approved :: MIT License',
          'Programming Language :: Python :: 3 :: Only'
       ],
-      install_requires=requirements,
+      install_requires=['requests'],
       extras_require={'dev': ['pytest', 'requests-mock'], 'async': ['treq']}
     )

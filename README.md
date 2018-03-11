@@ -46,11 +46,13 @@ reactor.run()
 The library can be installed from PyPi as follows.
 
 ```bash
+pip install luno
 ```
 
 The async client is an optional extra and may be installed as follows.
 
 ```bash
+pip install luno[async]
 ```
 
 To install the version on this repository follow the steps below.
@@ -81,6 +83,5 @@ pytest
 
 Note this library is still in beta.
 
-- Upload to PyPi
 - Write documentation
 - Write test suite for async client
