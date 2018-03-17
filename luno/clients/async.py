@@ -12,22 +12,24 @@ class LunoAsyncClient(LunoClientBase):
 	def __init__(self, api_key: str=None, secret: str=None) -> None:
 		self.api_key = api_key
 		self.secret = secret
-
+		
 	@inlineCallbacks
 	def _fetch_resource(self, method: str, suffix: str, params: Dict={}) -> Deferred:
+		"""Helper function to make API requests
+
+		Args:
+		    method: The http verb i.e. get, post, put, delete
+		    suffix: The uri suffix
+		    params: A dict of query params
+
+		Returns:
+		    A twisted deferred
+		"""
 		url = f'{self.BASE_URI}{suffix}'
+		headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+		auth = (api_key, secret)
 
-		if method == 'get':
-			resp = yield treq.get(url, params=params)
-		elif method == 'post':
-			resp = yield treq.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		elif method == 'delete':
-			resp = yield treq.delete(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		elif method == 'put':
-			resp = yield treq.put(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		else:
-			raise UnsupportedHttpVerbException(f'http verb {method} is not supported')
-
+		resp = yield treq.request(method, url, params=params, headers=headers, auth=auth)
 		data = yield resp.json()
 		return data
 

@@ -1,4 +1,5 @@
 from requests import Session
+from requests.auth import HTTPBasicAuth
 from luno.clients.abc import LunoClientBase
 from luno.decorators import requires_authentication
 from luno.exceptions import UnsupportedHttpVerbException
@@ -11,6 +12,9 @@ class LunoSyncClient(LunoClientBase):
 		self.api_key = api_key
 		self.secret = secret
 		self.session = Session()
+		
+		if api_key is not None and secret is not None:
+			self.session.auth = HTTPBasicAuth(api_key, secret)
 
 	def _fetch_resource(self, method: str, suffix: str, params: Dict={}) -> Dict:
 		url = f'{self.BASE_URI}{suffix}'

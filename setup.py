@@ -18,18 +18,12 @@ def get_version():
   return match_dict['version']
 
 
-def convert_readme():
-  try:
-    from pypandoc import convert_file
-
-    convert_file('README.md', 'rst', 'md', outputfile='README.rst')
-  except ImportError:
-    print('pypandoc not installed, README.rst will not be updated')
+def get_readme():
+  with open('README.md') as f:
+    return f.read()
 
 
 if sys.argv[-1] == 'publish':
-    convert_readme()
-
     os.system('python setup.py sdist bdist_wheel')
     os.system('twine upload dist/*')
     shutil.rmtree('dist')
@@ -40,6 +34,7 @@ if sys.argv[-1] == 'publish':
 
 if __name__ == '__main__':
     version = get_version()
+    readme = get_readme()
 
     setup(
       name='luno',
@@ -48,6 +43,8 @@ if __name__ == '__main__':
       author_email='bradleykirton@gmail.com',
       packages=find_packages(),
       description='Luno Crypto Currency Exchanage Python API',
+      long_description=readme,
+      long_description_content_type='text/markdown',
       url='https://github.com/BradleyKirton/luno',
       license='MIT',
       keywords=['exchange', 'crypto currency', 'rest', 'api', 'bitcoin', 'etherium'],
