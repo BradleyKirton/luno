@@ -183,8 +183,8 @@ class LunoSyncClient(LunoClientBase):
 		self,
 		pair: str,
 		kind: str,
-		counter_volume: str,
-		base_volume: str,
+		counter_volume: str=None,
+		base_volume: str=None,
 		base_account_id: str=None,
 		counter_account_id: str=None) -> Dict:
 		"""
@@ -198,14 +198,20 @@ class LunoSyncClient(LunoClientBase):
 		Args:
 			pair: The currency pair to trade e.g. XBTZAR
 			kind: "BUY" to buy bitcoin, or "SELL" to sell bitcoin.
-			counter_volume: - if type is "BUY" 	For a "BUY" order: amount of local currency (e.g. ZAR, MYR) to spend as a decimal string in units of the local currency e.g. "100.50".
-			base_volume: - if type is "SELL" 	For a "SELL" order: amount of Bitcoin to sell as a decimal string in units of BTC e.g. "1.423".
+			counter_volume: - Required if kind is "BUY". Amount of local currency (e.g. ZAR, MYR) to spend as a decimal string in units of the local currency e.g. "100.50".
+			base_volume: - Required if kind is "SELL". Amount of Bitcoin to sell as a decimal string in units of BTC e.g. "1.423".
 			base_account_id: The base currency account to use in the trade.
 			counter_account_id: The counter currency account to use in the trade.
 
 		Returns:
 			A python dict of order data		
 		"""
+		if kind == 'BUY' and counter_volume is None:
+			raise ValueError(f"counter_volume is required if the order type is 'BUY'")
+
+		if kind == 'SELL' and base_volume is None:
+			raise ValueError(f"base_volume is required if the order type is 'SELL'")
+
 		params = {
 			'pair': pair,
 			'type': kind,
