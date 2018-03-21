@@ -7,15 +7,20 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-# Some helper functions
-def get_version():
-  PATTERN = "__version__\s+=\s+'(?P<version>.*)'"
+def get_version() -> str:
+  """Helper function to fetch the package version from the package __init__.py file"""
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  with open(os.path.join(base_dir, 'luno/__init__.py'), 'r') as f:
+    content = f.read()
 
-  with open('luno/__init__.py', 'r') as f:
-      match = re.search(PATTERN, f.read())
-      match_dict = match.groupdict()
+  rpattern = re.compile("__version__\\s+=\\s+'?(?P<package_version>[.\\d]+)'?")
+  package_version = (
+      rpattern
+        .match(content)
+        .groupdict()['package_version']
+      )
 
-  return match_dict['version']
+  return package_version
 
 
 def get_readme():
