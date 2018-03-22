@@ -47,6 +47,7 @@ if __name__ == '__main__':
       author='Bradley Stuart Kirton',
       author_email='bradleykirton@gmail.com',
       packages=find_packages(),
+      include_package_data=True,
       description='Luno Crypto Currency Exchanage Python API',
       long_description=readme,
       long_description_content_type='text/markdown',
