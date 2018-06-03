@@ -1,8 +1,7 @@
 import pytest
 
-from luno.exceptions import UnauthorisedResourceException
 from luno.clients.sync import LunoSyncClient
-
+from luno.exceptions import UnauthorisedResourceException
 
 
 class Response:
@@ -22,13 +21,13 @@ def response():
 @pytest.fixture
 def client():
     """Provides an authorized client as a fixture"""
-    return LunoSyncClient('api_key', 'secret')
+    return LunoSyncClient()
 
 
 @pytest.fixture
 def uclient():
     """Provides an unauthorized client as a fixture"""
-    return LunoSyncClient()
+    return LunoSyncClient('api_key', 'secret')
 
 
 def test_ticker(mocker, response, client) -> None:
@@ -39,7 +38,7 @@ def test_ticker(mocker, response, client) -> None:
     mocker.patch('requests.Session.request', return_value=response)
     response = client.ticker(pair='XBTZAR')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
@@ -51,7 +50,7 @@ def test_tickers(mocker, response, client) -> None:
     mocker.patch('requests.Session.request', return_value=response)
     response = client.tickers()
         
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
@@ -63,7 +62,7 @@ def test_order_book(mocker, response, client) -> None:
     mocker.patch('requests.Session.request', return_value=response)
     response = client.order_book(pair='XBTZAR')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
@@ -75,59 +74,59 @@ def test_trades(mocker, response, client) -> None:
     mocker.patch('requests.Session.request', return_value=response)
     response = client.trades(pair='XBTZAR', since=100)
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_accounts(mocker, response, client) -> None:
+def test_accounts(mocker, response, uclient) -> None:
     """Test the test_accounts method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}accounts'
     data = {}
 
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.accounts(currency='ZAR', name='testing')
+    response = uclient.accounts(currency='ZAR', name='testing')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_balance(mocker, response, client) -> None:
+def test_balance(mocker, response, uclient) -> None:
     """Test the test_balance method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}balance'
     data = {}
 
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.balance()
+    response = uclient.balance()
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_transactions(mocker, response, client) -> None:
+def test_transactions(mocker, response, uclient) -> None:
     """Test the test_transactions method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}accounts/1/transactions'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.transactions(1, 1, 1)
+    response = uclient.transactions(1, 1, 1)
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_list_orders(mocker, response, client) -> None:
+def test_list_orders(mocker, response, uclient) -> None:
     """Test the test_list_orders method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}listorders'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.list_orders()
+    response = uclient.list_orders()
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_post_limit_order(mocker, response, client) -> None:
+def test_post_limit_order(mocker, response, uclient) -> None:
     """Test the test_post_limit_order method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}postorder'
     data = {}
@@ -142,12 +141,12 @@ def test_post_limit_order(mocker, response, client) -> None:
         'counter_account_id': 'test'
     }
 
-    response = client.post_limit_order(**kwargs)
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.post_limit_order(**kwargs)
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_post_market_order(mocker, response, client) -> None:
+def test_post_market_order(mocker, response, uclient) -> None:
     """Test the test_post_market_order method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}marketorder'
     data = {}
@@ -162,36 +161,36 @@ def test_post_market_order(mocker, response, client) -> None:
         'counter_account_id': 'test'
     }
 
-    response = client.post_market_order(**kwargs)
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.post_market_order(**kwargs)
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_cancel_order(mocker, response, client) -> None:
+def test_cancel_order(mocker, response, uclient) -> None:
     """Test the test_cancel_order method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}stoporder'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.cancel_order(order_id='1234')    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.cancel_order(order_id='1234')    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_get_order(mocker, response, client) -> None:
+def test_get_order(mocker, response, uclient) -> None:
     """Test the test_get_order method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}orders/1234'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.get_order(order_id='1234')    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.get_order(order_id='1234')    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
     
 
-def test_list_trades(mocker, response, client) -> None:
+def test_list_trades(mocker, response, uclient) -> None:
     """Test the test_list_trades method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}listtrades'
     data = {}
@@ -203,60 +202,60 @@ def test_list_trades(mocker, response, client) -> None:
         'limit': 'test'    
     }
 
-    response = client.list_trades(**kwargs)
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.list_trades(**kwargs)
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
     
 
-def test_fee_info(mocker, response, client) -> None:
+def test_fee_info(mocker, response, uclient) -> None:
     """Test the test_fee_info method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}fee_info'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.fee_info(pair='XBTZAR')
+    response = uclient.fee_info(pair='XBTZAR')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_receive_addresses(mocker, response, client) -> None:
+def test_receive_addresses(mocker, response, uclient) -> None:
     """Test the test_receive_addresses method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}funding_address'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.receive_addresses(asset='test', address='test')    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.receive_addresses(asset='test', address='test')    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_create_receive_address(mocker, response, client) -> None:
+def test_create_receive_address(mocker, response, uclient) -> None:
     """Test the test_create_receive_address method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}funding_address'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.create_receive_address(asset='test')
+    response = uclient.create_receive_address(asset='test')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_withdrawals(mocker, response, client) -> None:
+def test_withdrawals(mocker, response, uclient) -> None:
     """Test the test_withdrawals method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}withdrawals'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.withdrawals()
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.withdrawals()
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_create_withdrawal_request(mocker, response, client) -> None:
+def test_create_withdrawal_request(mocker, response, uclient) -> None:
     """Test the test_create_withdrawal_request method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}withdrawals'
     data = {}
@@ -268,36 +267,36 @@ def test_create_withdrawal_request(mocker, response, client) -> None:
         'beneficiary_id': 'test'
     }
 
-    response = client.create_withdrawal_request(**kwargs)
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.create_withdrawal_request(**kwargs)
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_withdrawal_request_status(mocker, response, client) -> None:
+def test_withdrawal_request_status(mocker, response, uclient) -> None:
     """Test the test_withdrawal_request_status method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}withdrawals/1234'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.withdrawal_request_status(withdrawal_id='1234')    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.withdrawal_request_status(withdrawal_id='1234')    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_cancel_withdrawal_request(mocker, response, client) -> None:
+def test_cancel_withdrawal_request(mocker, response, uclient) -> None:
     """Test the test_cancel_withdrawal_request method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}withdrawals/1234'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
-    response = client.cancel_withdrawal_request(withdrawal_id='1234')
+    response = uclient.cancel_withdrawal_request(withdrawal_id='1234')
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_send(mocker, response, client) -> None:
+def test_send(mocker, response, uclient) -> None:
     """Test the (client method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}send'
     data = {}
@@ -311,13 +310,13 @@ def test_send(mocker, response, client) -> None:
         'message': 'test'
     }
 
-    response = client.send(**kwargs)
+    response = uclient.send(**kwargs)
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_create_quote(mocker, response, client) -> None:
+def test_create_quote(mocker, response, uclient) -> None:
     """Test the test_create_quote method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}quotes'
     data = {}
@@ -329,43 +328,43 @@ def test_create_quote(mocker, response, client) -> None:
         'pair': 'test'
     }
 
-    response = client.create_quote(**kwargs)
+    response = uclient.create_quote(**kwargs)
     
-    message = (f"expected reponse {data}, received {response}")
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_get_quote(mocker, response, client) -> None:
+def test_get_quote(mocker, response, uclient) -> None:
     """Test the test_get_quote method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}quotes/1'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.get_quote(quote_id=1)    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.get_quote(quote_id=1)    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_exercise_quote(mocker, response, client) -> None:
+def test_exercise_quote(mocker, response, uclient) -> None:
     """Test the test_exercise_quote method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}quotes/1'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
 
-    response = client.exercise_quote(quote_id=1)    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.exercise_quote(quote_id=1)    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
 
 
-def test_discard_quote(mocker, response, client) -> None:
+def test_discard_quote(mocker, response, uclient) -> None:
     """Test the test_discard_quote method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}quotes/1'
     data = {}
     
     mocker.patch('requests.Session.request', return_value=response)
     
-    response = client.discard_quote(quote_id=1)    
-    message = (f"expected reponse {data}, received {response}")
+    response = uclient.discard_quote(quote_id=1)    
+    message = (f"expected response {data}, received {response}")
     assert data == response, message
