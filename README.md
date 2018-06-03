@@ -84,4 +84,3 @@ pytest
 Note this library is still in beta.
 
 - Write documentation
-- Write test suite for async client
