@@ -78,6 +78,18 @@ def test_trades(mocker, response, client) -> None:
     assert data == response, message
 
 
+def test_private_resource_raises(mocker, response, client) -> None:
+    """Tests that accessing a private resource raises the UnauthorisedResourceException
+    exception when accessing it with an unathenticated client"""
+    url = f'{LunoSyncClient.BASE_URI}accounts'
+    data = {}
+
+    mocker.patch('requests.Session.request', return_value=response)
+    
+    with pytest.raises(UnauthorisedResourceException):
+        client.accounts(currency='ZAR', name='testing')
+    
+
 def test_accounts(mocker, response, uclient) -> None:
     """Test the test_accounts method of the sync client"""
     url = f'{LunoSyncClient.BASE_URI}accounts'

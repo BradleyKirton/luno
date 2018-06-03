@@ -27,7 +27,7 @@ class LunoAsyncClient(LunoClientBase):
 		"""
 		url = f'{self.BASE_URI}{suffix}'
 		headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-		auth = (api_key, secret)
+		auth = (self.api_key, self.secret)
 
 		resp = yield treq.request(method, url, params=params, headers=headers, auth=auth)
 		data = yield resp.json()
@@ -91,7 +91,7 @@ class LunoAsyncClient(LunoClientBase):
 		Returns:
 		    A twisted deferred which will eventually return a python dict
 		"""
-		return self._fetch_resource('post', 'trades', {'pair': pair, 'name': name})
+		return self._fetch_resource('post', 'trades', {'currency': currency, 'name': name})
 
 	@requires_authentication
 	def balance(self) -> Deferred:
@@ -333,7 +333,7 @@ class LunoAsyncClient(LunoClientBase):
 		return self._fetch_resource('get', 'withdrawals')
 
 	@requires_authentication
-	def create_withdrawal_request(self) -> Deferred:
+	def create_withdrawal_request(self, kind: str, amount: str, beneficiary_id: str=None) -> Deferred:
 		"""Creates a new withdrawal request
 
 		Args:
