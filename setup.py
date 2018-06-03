@@ -65,5 +65,5 @@ if __name__ == '__main__':
          'Programming Language :: Python :: 3 :: Only'
       ],
       install_requires=['requests'],
-      extras_require={'dev': ['pytest', 'requests-mock', 'pypandoc', 'wheel', 'twine'], 'async': ['treq']}
+      extras_require={'dev': ['pytest', 'pytest-mock', 'wheel', 'twine'], 'async': ['treq']}
     )
