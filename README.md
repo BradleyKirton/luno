@@ -24,7 +24,7 @@ client.ticker('XBTZAR')
 ```python
 from typing import Dict
 from twisted.internet import reactor
-from luno.clients.async import LunoAsyncClient
+from luno.clients.asynchronous import LunoAsyncClient
 
 api_key = ''
 api_secret = ''

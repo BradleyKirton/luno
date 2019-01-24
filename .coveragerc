@@ -1,0 +1,9 @@
+[run]
+source =
+    luno
+
+omit =
+	*tests*
+	*env*
+	setup.py
+

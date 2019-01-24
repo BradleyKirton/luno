@@ -1,6 +1,6 @@
 class UnauthorisedResourceException(Exception):
-	pass
+    pass
 
 
 class UnsupportedHttpVerbException(Exception):
-	pass
+    pass

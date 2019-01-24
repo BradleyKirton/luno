@@ -24,7 +24,7 @@ class LunoClientBase(LunoClientABC):
     PERM_R_BENEFICIARIES = 32768
     PERM_W_BENEFICIARIES = 65536
 
-    BASE_URI = 'https://api.mybitx.com/api/1/'
+    BASE_URI = "https://api.mybitx.com/api/1/"
 
     @property
     def _has_auth_details(self) -> bool:

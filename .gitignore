@@ -1,5 +1,6 @@
 env/
 notebooks/
+htmlcov/
 
 .mypy_cache/
 .pytest_cache/

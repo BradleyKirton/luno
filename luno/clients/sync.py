@@ -8,33 +8,45 @@ from typing import Dict
 
 
 class LunoSyncClient(LunoClientBase):
-	def __init__(self, api_key: str=None, secret: str=None) -> None:
-		self.api_key = api_key
-		self.secret = secret
-		self.session = Session()
-		
-		if api_key is not None and secret is not None:
-			self.session.auth = HTTPBasicAuth(api_key, secret)
+    def __init__(self, api_key: str = None, secret: str = None) -> None:
+        self.api_key = api_key
+        self.secret = secret
+        self.session = Session()
 
-	def _fetch_resource(self, method: str, suffix: str, params: Dict={}) -> Dict:
-		url = f'{self.BASE_URI}{suffix}'
-		if method == 'get':
-			resp = self.session.get(url, params=params)
-		elif method == 'post':
-			resp = self.session.post(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		elif method == 'delete':
-			resp = self.session.delete(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		elif method == 'put':
-			resp = self.session.put(url, params=params, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-		else:
-			raise UnsupportedHttpVerbException(f'http verb {method} is not supported')
+        if api_key is not None and secret is not None:
+            self.session.auth = HTTPBasicAuth(api_key, secret)
 
-		resp.raise_for_status()
+    def _fetch_resource(self, method: str, suffix: str, params: Dict = {}) -> Dict:
+        url = f"{self.BASE_URI}{suffix}"
+        if method == "get":
+            resp = self.session.get(url, params=params)
+        elif method == "post":
+            resp = self.session.post(
+                url,
+                params=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        elif method == "delete":
+            resp = self.session.delete(
+                url,
+                params=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        elif method == "put":
+            resp = self.session.put(
+                url,
+                params=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        else:
+            raise UnsupportedHttpVerbException(f"http verb {method} is not supported")
 
-		return resp.json()
+        resp.raise_for_status()
 
-	def ticker(self, pair: str) -> Dict:
-		"""Returns the latest ticker indicators
+        return resp.json()
+
+    def ticker(self, pair: str) -> Dict:
+        """Returns the latest ticker indicators
 
 		Args:
 			pair: A currency pair
@@ -42,18 +54,18 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of ticker indicators
 		"""
-		return self._fetch_resource('get', 'ticker', {'pair': pair})
+        return self._fetch_resource("get", "ticker", {"pair": pair})
 
-	def tickers(self) -> Dict:
-		"""Returns the latest ticker indicators from all active Luno exchanges
+    def tickers(self) -> Dict:
+        """Returns the latest ticker indicators from all active Luno exchanges
 
 		Returns:
 		    A python dict of ticker indicators
 		"""
-		return self._fetch_resource('get', 'tickers')
+        return self._fetch_resource("get", "tickers")
 
-	def order_book(self, pair: str) -> Dict:
-		"""Returns a list of bids and asks in the order book. Ask orders are sorted by price ascending. 
+    def order_book(self, pair: str) -> Dict:
+        """Returns a list of bids and asks in the order book. Ask orders are sorted by price ascending. 
 		Bid orders are sorted by price descending. Note that multiple orders at the same price are not necessarily conflated
 
 		Args:
@@ -62,10 +74,10 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of orders data
 		"""
-		return self._fetch_resource('get', 'orderbook', {'pair': pair})
+        return self._fetch_resource("get", "orderbook", {"pair": pair})
 
-	def trades(self, pair: str, since: int=None) -> Dict:
-		"""Returns a list of the most recent trades. At most 100 results are returned per call
+    def trades(self, pair: str, since: int = None) -> Dict:
+        """Returns a list of the most recent trades. At most 100 results are returned per call
 
 		Args:
 			pair: Currency pair e.g. XBTZAR
@@ -74,15 +86,15 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of trade data
 		"""
-		params = {'pair': pair}
-		if since is not None:
-			params['since'] = since
-			
-		return self._fetch_resource('get', 'trades', params)
+        params = {"pair": pair}
+        if since is not None:
+            params["since"] = since
 
-	@requires_authentication
-	def accounts(self, currency: str, name: str) -> Dict:
-		"""Create an additional account for the specified currency
+        return self._fetch_resource("get", "trades", params)
+
+    @requires_authentication
+    def accounts(self, currency: str, name: str) -> Dict:
+        """Create an additional account for the specified currency
 
 		Args:
 			currency: The currency code for the account you want to create e.g. XBT, IDR, MYR, ZAR
@@ -91,20 +103,22 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of account data
 		"""
-		return self._fetch_resource('post', 'accounts', {'currency': currency, 'name': name})
+        return self._fetch_resource(
+            "post", "accounts", {"currency": currency, "name": name}
+        )
 
-	@requires_authentication
-	def balance(self) -> Dict:
-		"""Return the list of all accounts and their respective balances
+    @requires_authentication
+    def balance(self) -> Dict:
+        """Return the list of all accounts and their respective balances
 
 		Returns:
 		    A python dict of balance data
 		"""
-		return self._fetch_resource('get', 'balance')
+        return self._fetch_resource("get", "balance")
 
-	@requires_authentication
-	def transactions(self, account_id: int, min_row: int, max_row: int) -> Dict:
-		"""Return a list of transaction entries from an account.
+    @requires_authentication
+    def transactions(self, account_id: int, min_row: int, max_row: int) -> Dict:
+        """Return a list of transaction entries from an account.
 
 		Transaction entry rows are numbered sequentially starting from 1, where 1 is the oldest entry. 
 		The range of rows to return are specified with the min_row (inclusive) and max_row (exclusive) parameters. 
@@ -122,13 +136,15 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of transaction data
 		"""
-		return self._fetch_resource(
-			'get', f'accounts/{account_id}/transactions', {'min_row': min_row, 'max_row': max_row})
+        return self._fetch_resource(
+            "get",
+            f"accounts/{account_id}/transactions",
+            {"min_row": min_row, "max_row": max_row},
+        )
 
-
-	@requires_authentication
-	def list_orders(self) -> Dict:
-		"""Trading on the market is done by submitting trade orders. 
+    @requires_authentication
+    def list_orders(self) -> Dict:
+        """Trading on the market is done by submitting trade orders. 
 		
 		After a new order has been created, it is submitted for processing by the order matching engine.
 		The order then either matches against an existing order in the order book and is filled or it rests in the order book until it is stopped. 
@@ -136,19 +152,19 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of orders data
 		"""
-		return self._fetch_resource('get', 'listorders')
+        return self._fetch_resource("get", "listorders")
 
-
-	@requires_authentication
-	def post_limit_order(
-		self,
-		pair: str,
-		kind: str,
-		volume: str,
-		price: str,
-		base_account_id: str=None,
-		counter_account_id: str=None) -> Dict:
-		"""Create a new trade order
+    @requires_authentication
+    def post_limit_order(
+        self,
+        pair: str,
+        kind: str,
+        volume: str,
+        price: str,
+        base_account_id: str = None,
+        counter_account_id: str = None,
+    ) -> Dict:
+        """Create a new trade order
 
 		If no base_account_id or counter_account_id are specified, your default base currency or counter currency account will be used. You can find your account IDs by calling the Balances API.
 		
@@ -163,31 +179,27 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of order data
 		"""
-		params = {
-			'pair': pair,
-			'type': kind,
-			'volume': volume,
-			'price': price
-		}
+        params = {"pair": pair, "type": kind, "volume": volume, "price": price}
 
-		if base_account_id is not None:
-			params['base_account_id'] = base_account_id,
-		
-		if counter_account_id is not None:
-			params['counter_account_id'] = counter_account_id
+        if base_account_id is not None:
+            params["base_account_id"] = (base_account_id,)
 
-		return self._fetch_resource('post', 'postorder', params)
+        if counter_account_id is not None:
+            params["counter_account_id"] = counter_account_id
 
-	@requires_authentication
-	def post_market_order(
-		self,
-		pair: str,
-		kind: str,
-		counter_volume: str=None,
-		base_volume: str=None,
-		base_account_id: str=None,
-		counter_account_id: str=None) -> Dict:
-		"""
+        return self._fetch_resource("post", "postorder", params)
+
+    @requires_authentication
+    def post_market_order(
+        self,
+        pair: str,
+        kind: str,
+        counter_volume: str = None,
+        base_volume: str = None,
+        base_account_id: str = None,
+        counter_account_id: str = None,
+    ) -> Dict:
+        """
 		Create a new market order.
 
 		If no base_account_id or counter_account_id are specified, your default base currency or counter currency account will be used. You can find your account IDs by calling the Balances API.
@@ -206,30 +218,30 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 			A python dict of order data		
 		"""
-		if kind == 'BUY' and counter_volume is None:
-			raise ValueError(f"counter_volume is required if the order type is 'BUY'")
+        if kind == "BUY" and counter_volume is None:
+            raise ValueError(f"counter_volume is required if the order type is 'BUY'")
 
-		if kind == 'SELL' and base_volume is None:
-			raise ValueError(f"base_volume is required if the order type is 'SELL'")
+        if kind == "SELL" and base_volume is None:
+            raise ValueError(f"base_volume is required if the order type is 'SELL'")
 
-		params = {
-			'pair': pair,
-			'type': kind,
-			'counter_volume': counter_volume,
-			'base_volume': base_volume
-		}
+        params = {
+            "pair": pair,
+            "type": kind,
+            "counter_volume": counter_volume,
+            "base_volume": base_volume,
+        }
 
-		if base_account_id is not None:
-			params['base_account_id'] = base_account_id
+        if base_account_id is not None:
+            params["base_account_id"] = base_account_id
 
-		if counter_account_id is not None:
-			params['counter_account_id'] = counter_account_id
+        if counter_account_id is not None:
+            params["counter_account_id"] = counter_account_id
 
-		return self._fetch_resource('post', 'marketorder', params)
+        return self._fetch_resource("post", "marketorder", params)
 
-	@requires_authentication
-	def cancel_order(self, order_id: str) -> Dict:
-		"""Request to stop an order.
+    @requires_authentication
+    def cancel_order(self, order_id: str) -> Dict:
+        """Request to stop an order.
 			
 		Args:
 			order_id: The order reference as a string e.g. BXMC2CJ7HNB88U4
@@ -237,11 +249,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict indicating success or failure
 		"""
-		return self._fetch_resource('post', 'stoporder', {'order_id': order_id})
+        return self._fetch_resource("post", "stoporder", {"order_id": order_id})
 
-	@requires_authentication
-	def get_order(self, order_id: str) -> Dict:
-		"""Get an order by its id.
+    @requires_authentication
+    def get_order(self, order_id: str) -> Dict:
+        """Get an order by its id.
 			
 		Args:
 			order_id: The order ID
@@ -249,15 +261,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of order data
 		"""
-		return self._fetch_resource('get', f'orders/{order_id}')
+        return self._fetch_resource("get", f"orders/{order_id}")
 
-	@requires_authentication
-	def list_trades(
-		self,
-		pair: str,
-		since: int=None,
-		limit: int=None) -> Dict:
-		"""Returns a list of your recent trades for a given pair, sorted by oldest first.
+    @requires_authentication
+    def list_trades(self, pair: str, since: int = None, limit: int = None) -> Dict:
+        """Returns a list of your recent trades for a given pair, sorted by oldest first.
 
 		Note:
 			- The 'type' in the response indicates the type of order that you placed in order to participate in the trade. Possible types include BID and ASK.
@@ -272,19 +280,19 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of order data
 		"""
-		params = {'pair': pair}
+        params = {"pair": pair}
 
-		if since is not None:
-			params['since'] = since
-			
-		if limit is not None:
-			params['limit'] = limit
+        if since is not None:
+            params["since"] = since
 
-		return self._fetch_resource('get', 'listtrades', params=params)
+        if limit is not None:
+            params["limit"] = limit
 
-	@requires_authentication
-	def fee_info(self, pair: str) -> Dict:
-		"""Returns your fees and 30 day trading volume (as of midnight) for a given pair.
+        return self._fetch_resource("get", "listtrades", params=params)
+
+    @requires_authentication
+    def fee_info(self, pair: str) -> Dict:
+        """Returns your fees and 30 day trading volume (as of midnight) for a given pair.
 
 		Args:
 			pair: Filter to trades of this currency pair e.g. XBTZAR
@@ -292,11 +300,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of fee data
 		"""
-		return self._fetch_resource('get', 'fee_info', params={'pair': pair})
+        return self._fetch_resource("get", "fee_info", params={"pair": pair})
 
-	@requires_authentication
-	def receive_addresses(self, asset: str, address: str=None) -> Dict:
-		"""Returns the default receive address associated with your account and the amount received via the address. 
+    @requires_authentication
+    def receive_addresses(self, asset: str, address: str = None) -> Dict:
+        """Returns the default receive address associated with your account and the amount received via the address. 
 		You can specify an optional address parameter to return information for a non-default receive address. 
 		In the response, total_received is the total confirmed Bitcoin amount received excluding unconfirmed transactions. 
 		The total_unconfirmed is the total sum of unconfirmed receive transactions.
@@ -308,11 +316,13 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of addresses
 		"""
-		return self._fetch_resource('get', 'funding_address', params={'asset': asset, 'address': address})
+        return self._fetch_resource(
+            "get", "funding_address", params={"asset": asset, "address": address}
+        )
 
-	@requires_authentication
-	def create_receive_address(self, asset: str) -> Dict:
-		"""Allocates a new receive address to your account. 
+    @requires_authentication
+    def create_receive_address(self, asset: str) -> Dict:
+        """Allocates a new receive address to your account. 
 		There is a rate limit of 1 address per hour, but bursts of up to 10 addresses are allowed.
 
 		Args:
@@ -321,20 +331,22 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of address data
 		"""
-		return self._fetch_resource('post', 'funding_address', params={'asset': asset})
+        return self._fetch_resource("post", "funding_address", params={"asset": asset})
 
-	@requires_authentication
-	def withdrawals(self) -> Dict:
-		"""Returns a list of withdrawal requests.
+    @requires_authentication
+    def withdrawals(self) -> Dict:
+        """Returns a list of withdrawal requests.
 
 		Returns:
 		    A python dict of withdrawal data
 		"""
-		return self._fetch_resource('get', 'withdrawals')
+        return self._fetch_resource("get", "withdrawals")
 
-	@requires_authentication
-	def create_withdrawal_request(self, kind: str, amount: str, beneficiary_id: str=None) -> Dict:
-		"""Creates a new withdrawal request
+    @requires_authentication
+    def create_withdrawal_request(
+        self, kind: str, amount: str, beneficiary_id: str = None
+    ) -> Dict:
+        """Creates a new withdrawal request
 
 		Args:
 			kind: Withdrawal types e.g. ZAR_EFT, NAD_EFT, KES_MPESA, MYR_IBG, IDR_LLG
@@ -344,17 +356,13 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of withdrawal request data
 		"""
-		params = {
-			'type': kind,
-			'amount': amount,
-			'beneficiary_id': beneficiary_id,
-		}
-		
-		return self._fetch_resource('post', 'withdrawals', params=params)
+        params = {"type": kind, "amount": amount, "beneficiary_id": beneficiary_id}
 
-	@requires_authentication
-	def withdrawal_request_status(self, withdrawal_id: int) -> Dict:
-		"""Returns the status of a particular withdrawal request.
+        return self._fetch_resource("post", "withdrawals", params=params)
+
+    @requires_authentication
+    def withdrawal_request_status(self, withdrawal_id: int) -> Dict:
+        """Returns the status of a particular withdrawal request.
 
 		Args:
 			withdrawal_id: Withdrawal ID to retrieve.
@@ -362,11 +370,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of withdrawal request data
 		"""
-		return self._fetch_resource('get', f'withdrawals/{withdrawal_id}')
+        return self._fetch_resource("get", f"withdrawals/{withdrawal_id}")
 
-	@requires_authentication
-	def cancel_withdrawal_request(self, withdrawal_id: int) -> Dict:
-		"""Cancel a withdrawal request. This can only be done if the request is still in state PENDING.
+    @requires_authentication
+    def cancel_withdrawal_request(self, withdrawal_id: int) -> Dict:
+        """Cancel a withdrawal request. This can only be done if the request is still in state PENDING.
 
 		Args:
 			withdrawal_id: ID of the withdrawal to cancel.
@@ -374,17 +382,18 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of withdrawal request data
 		"""
-		return self._fetch_resource('delete', f'withdrawals/{withdrawal_id}')
+        return self._fetch_resource("delete", f"withdrawals/{withdrawal_id}")
 
-	@requires_authentication
-	def send(
-		self,
-		amount: str,
-		currency: str,
-		address: str,
-		description: str=None,
-		message: str=None) -> Dict:
-		"""
+    @requires_authentication
+    def send(
+        self,
+        amount: str,
+        currency: str,
+        address: str,
+        description: str = None,
+        message: str = None,
+    ) -> Dict:
+        """
 
 		Args:
 			amount: Amount to send as a decimal string.
@@ -396,27 +405,19 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of indicating the status of the send request
 		"""
-		params = {
-			'amount': amount,
-			'currency': currency,
-			'address': address
-		}
+        params = {"amount": amount, "currency": currency, "address": address}
 
-		if description is not None:
-			params['description'] = description
-		
-		if message is not None:
-			params['message'] = message
+        if description is not None:
+            params["description"] = description
 
-		return self._fetch_resource('post', 'send', params)
+        if message is not None:
+            params["message"] = message
 
-	@requires_authentication
-	def create_quote(
-		self,
-		kind: str,
-		base_amount: str,
-		pair: str) -> Dict:
-		"""Creates a new quote to buy or sell a particular amount.
+        return self._fetch_resource("post", "send", params)
+
+    @requires_authentication
+    def create_quote(self, kind: str, base_amount: str, pair: str) -> Dict:
+        """Creates a new quote to buy or sell a particular amount.
 
 		You can specify either the exact amount that you want to pay or the exact amount that you want too receive.
 		For example, to buy exactly 0.1 Bitcoin using ZAR, you would create a quote to BUY 0.1 XBTZAR. The returned quote includes the appropriate ZAR amount. 
@@ -432,20 +433,13 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of quote data
 		"""
-		params = {
-			'type': kind,
-			'base_amount': base_amount,
-			'pair': pair
-		}
+        params = {"type": kind, "base_amount": base_amount, "pair": pair}
 
-		return self._fetch_resource('post', 'quotes', params)
+        return self._fetch_resource("post", "quotes", params)
 
-
-	@requires_authentication
-	def get_quote(
-		self,
-		quote_id: int) -> Dict:
-		"""Get the latest status of a quote.
+    @requires_authentication
+    def get_quote(self, quote_id: int) -> Dict:
+        """Get the latest status of a quote.
 
 		Args:
 			quote_id: ID of the quote to retrieve.
@@ -453,13 +447,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of quote data
 		"""
-		return self._fetch_resource('get', f'quotes/{quote_id}')
+        return self._fetch_resource("get", f"quotes/{quote_id}")
 
-	@requires_authentication
-	def exercise_quote(
-		self,
-		quote_id: int) -> Dict:
-		"""Exercise a quote to perform the trade. 
+    @requires_authentication
+    def exercise_quote(self, quote_id: int) -> Dict:
+        """Exercise a quote to perform the trade. 
 
 		If there is sufficient balance available in your account, it will be debited and the counter amount credited.
 		An error is returned if the quote has expired or if you have insufficient available balance.
@@ -470,13 +462,11 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of quote data
 		"""
-		return self._fetch_resource('put', f'quotes/{quote_id}')
+        return self._fetch_resource("put", f"quotes/{quote_id}")
 
-	@requires_authentication
-	def discard_quote(
-		self,
-		quote_id: int) -> Dict:
-		"""Discard a quote. Once a quote has been discarded, it cannot be exercised even if it has not expired yet.
+    @requires_authentication
+    def discard_quote(self, quote_id: int) -> Dict:
+        """Discard a quote. Once a quote has been discarded, it cannot be exercised even if it has not expired yet.
 
 		Args:
 			quote_id: ID of the quote to retrieve.
@@ -484,4 +474,4 @@ class LunoSyncClient(LunoClientBase):
 		Returns:
 		    A python dict of quote data
 		"""
-		return self._fetch_resource('delete', f'quotes/{quote_id}')
+        return self._fetch_resource("delete", f"quotes/{quote_id}")
