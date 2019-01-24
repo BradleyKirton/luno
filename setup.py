@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     setup(
         name="luno",
-        version="0.3.5",
+        version="0.3.6",
         description="Luno Crypto Currency Exchanage Python API",
         long_description=readme,
         long_description_content_type="text/markdown",
